@@ -1,0 +1,10 @@
+Connecting to MySQL...
+Connected!
+Admin records: [
+  {
+    "id": 1,
+    "email": "admin@test.com",
+    "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2jK6"
+  }
+]
+Password admin123 valid: false

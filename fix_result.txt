@@ -1,0 +1,4 @@
+New hash for admin123: $2b$10$MsbboHogftZrzQu1kthH8OFeDtZhrc8eaRs.UAzVMoe.JC6fCL0W.
+Verification: true
+Updated admin password in database!
+DB verification: true
