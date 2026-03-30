@@ -30,22 +30,33 @@ export async function POST(req: NextRequest) {
     const user = verifyRequest(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
 
-    const { student_id, course_id, marks }: any = await req.json();
+    const body: any = await req.json();
 
-    if (!student_id || !course_id || marks === undefined) {
-      return NextResponse.json({ success: false, message: "Student, course, and marks are required" }, { status: 400 });
+    // Check if body is an array or single object
+    const marksData = Array.isArray(body) ? body : [body];
+
+    if (marksData.length === 0) {
+      return NextResponse.json({ success: false, message: "No marks data provided" }, { status: 400 });
     }
 
-    if (marks < 0 || marks > 100) {
-      return NextResponse.json({ success: false, message: "Marks must be between 0 and 100" }, { status: 400 });
+    // Insert all subjects for the student
+    for (const entry of marksData) {
+      if (!entry.student_id || !entry.course_id || entry.marks === undefined) {
+        return NextResponse.json({ success: false, message: "Some data fields are missing" }, { status: 400 });
+      }
+      
+      const mVal = parseInt(entry.marks);
+      if (isNaN(mVal) || mVal < 0 || mVal > 100) {
+        return NextResponse.json({ success: false, message: "Valid marks are required (0-100)" }, { status: 400 });
+      }
+
+      await db.query(
+        "INSERT INTO marks (student_id, course_id, marks) VALUES (?, ?, ?)",
+        [entry.student_id, entry.course_id, mVal]
+      );
     }
 
-    const [result]: any = await db.query(
-      "INSERT INTO marks (student_id, course_id, marks) VALUES (?, ?, ?)",
-      [student_id, course_id, marks]
-    );
-
-    return NextResponse.json({ success: true, message: "Marks added successfully", data: { id: result.insertId } });
+    return NextResponse.json({ success: true, message: "Marks saved successfully" });
   } catch (error: any) {
     console.error("Create marks error:", error);
     return NextResponse.json({ success: false, message: "Failed to add marks" }, { status: 500 });
