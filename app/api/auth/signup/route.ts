@@ -4,11 +4,14 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-
-    console.log("ENV CHECK:");
-    console.log("DATABASE_URL:", process.env.DATABASE_URL);
-    console.log("JWT_SECRET:", process.env.JWT_SECRET);
     const { email, password } = await req.json();
+
+    if (!email || !password) {
+      return NextResponse.json(
+        { message: "Email and password are required" },
+        { status: 400 }
+      );
+    }
 
     // Check if email already exists
     const [existing]: any = await db.query(
@@ -23,7 +26,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔥 HASH PASSWORD (MOST IMPORTANT)
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await db.query(
@@ -36,7 +39,7 @@ export async function POST(req: Request) {
     });
 
   } catch (error: any) {
-    console.error("ERROR:", error);
+    console.error("Signup ERROR:", error);
     return NextResponse.json(
       { message: "Server error", error: error.message },
       { status: 500 }

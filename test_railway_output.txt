@@ -1,0 +1,9 @@
+DATABASE_URL exists: true
+Connection: SUCCESS
+Tables: [{"Tables_in_railway":"admin"},{"Tables_in_railway":"courses"},{"Tables_in_railway":"marks"},{"Tables_in_railway":"students"}]
+admin table: CREATED/EXISTS
+courses table: CREATED/EXISTS
+students table: CREATED/EXISTS
+marks table: CREATED/EXISTS
+Final tables: [{"Tables_in_railway":"admin"},{"Tables_in_railway":"courses"},{"Tables_in_railway":"marks"},{"Tables_in_railway":"students"}]
+DONE - All good!

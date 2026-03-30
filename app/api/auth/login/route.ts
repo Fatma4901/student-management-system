@@ -40,12 +40,12 @@ export async function POST(req: Request) {
 
     // Set HTTP-only cookie for security
     response.cookies.set("token", token, {
-  httpOnly: true,
-  secure: false, // 🔥 IMPORTANT for localhost
-  sameSite: "lax", // 🔥 change from strict
-  path: "/", // 🔥 IMPORTANT
-  maxAge: 60 * 60 * 24,
-});
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true on Vercel, false on localhost
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
     return response;
 
   } catch (error: any) {
