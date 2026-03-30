@@ -4,6 +4,10 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
+
+    console.log("ENV CHECK:");
+    console.log("DATABASE_URL:", process.env.DATABASE_URL);
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
     const { email, password } = await req.json();
 
     // Check if email already exists
@@ -32,9 +36,10 @@ export async function POST(req: Request) {
     });
 
   } catch (error: any) {
+    console.error("ERROR:", error);
     return NextResponse.json(
       { message: "Server error", error: error.message },
       { status: 500 }
     );
   }
-}
+}
