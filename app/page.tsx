@@ -1,6 +1,8 @@
 import db from "@/lib/db";
 import Table from "@/components/Table"; // adjust path if needed
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   // fetch data from database
   const [rows] = await db.query("SELECT * FROM admin");

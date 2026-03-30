@@ -2,6 +2,8 @@ import db from "@/lib/db";
 import { BookOpen, GraduationCap, Users, Plus, List, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   // Fetch real counts from the database
   const [[{ studentCount }]]: any = await db.query("SELECT COUNT(*) as studentCount FROM students");
