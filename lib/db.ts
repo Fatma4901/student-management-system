@@ -9,9 +9,10 @@ const db = mysql.createPool({
   ssl: {
     rejectUnauthorized: false, // important for Railway
   },
-  connectionLimit: 10, // good for production
+  connectionLimit: 3, // Lower for serverless to prevent exhaustion
   waitForConnections: true,
-  connectTimeout: 10000, // 10s timeout
+  connectTimeout: 5000, // 5s timeout instead of hanging forever
+  queueLimit: 0,
 });
 
 export default db;
