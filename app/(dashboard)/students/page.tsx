@@ -13,7 +13,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { 
   Users, Search, UserPlus, Filter, Download, MoreHorizontal, 
   Edit, Trash2, Mail, Phone, BookOpen, GraduationCap, 
-  AlertCircle, ChevronRight, CheckCircle2, Loader2, Plus
+  AlertCircle, ChevronRight, CheckCircle2, Loader2, Plus,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function StudentsPage() {
