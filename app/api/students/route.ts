@@ -31,13 +31,13 @@ export async function GET(req: NextRequest) {
       FROM students s
       LEFT JOIN courses c ON s.course_id = c.id
     `;
-    
+
     let queryParams: any[] = [];
     if (isStudent) {
       query += ` WHERE s.id = ? `;
       queryParams.push(user.id);
     }
-    
+
     query += ` ORDER BY s.created_at DESC `;
 
     const [rows]: any = await db.query(query, queryParams);
