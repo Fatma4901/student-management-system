@@ -86,7 +86,10 @@ export default function LandingPage() {
 
           <div className="flex items-center gap-3">
              <Link href="/login" className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors px-4 py-2 hover:bg-white rounded-lg">Sign In</Link>
-             <Link href="/signup" className="group relative text-sm font-semibold text-white px-5 py-2.5 rounded-lg overflow-hidden flex items-center gap-2 transform transition-all active:scale-95 shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_0_60px_-15px_rgba(37,99,235,0.7)]">
+             <Link href="/student-signup" className="hidden sm:flex text-sm font-semibold text-blue-600 px-5 py-2.5 rounded-xl border-2 border-blue-600/20 hover:bg-blue-600 hover:text-white transition-all transform active:scale-95">
+                Student Register
+             </Link>
+             <Link href="/signup" className="group relative text-sm font-semibold text-white px-5 py-2.5 rounded-xl overflow-hidden flex items-center gap-2 transform transition-all active:scale-95 shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_0_60px_-15px_rgba(37,99,235,0.7)]">
                 <span className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 group-hover:scale-105 transition-transform duration-500"></span>
                 <span className="relative z-10 flex items-center gap-2">Admin Register <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
              </Link>
@@ -118,8 +121,8 @@ export default function LandingPage() {
                      <span className="absolute inset-0 w-full h-full bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
                      <span className="relative flex items-center gap-2">Verify Student <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
                   </Link>
-                  <Link href="/login" className="flex items-center justify-center gap-2 px-8 py-4 bg-white border border-gray-200 text-slate-800 shadow-sm rounded-xl font-bold text-[15px] hover:border-gray-300 hover:shadow-md transition-all active:scale-95">
-                     Admin Dashboard
+                  <Link href="/student-signup" className="flex items-center justify-center gap-2 px-8 py-4 bg-white border border-blue-200 text-blue-700 shadow-sm rounded-xl font-bold text-[15px] hover:bg-blue-50/50 hover:shadow-md transition-all active:scale-95">
+                     Student Access
                   </Link>
                </div>
                <div className="flex items-center gap-4 pt-6 text-sm font-semibold text-slate-500">

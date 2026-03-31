@@ -8,15 +8,23 @@ export async function GET(req: NextRequest) {
     const user = verifyRequest(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
 
-    const query = `
+    const isStudent = user.role === 'student';
+    let query = `
       SELECT m.*, s.name as student_name, s.email as student_email, c.name as course_name
       FROM marks m
       JOIN students s ON m.student_id = s.id
       JOIN courses c ON m.course_id = c.id
-      ORDER BY m.created_at DESC
     `;
+    
+    let queryParams: any[] = [];
+    if (isStudent) {
+      query += ` WHERE m.student_id = ? `;
+      queryParams.push(user.id);
+    }
+    
+    query += ` ORDER BY m.created_at DESC `;
 
-    const [rows]: any = await db.query(query);
+    const [rows]: any = await db.query(query, queryParams);
 
     return NextResponse.json({ success: true, data: rows });
   } catch (error) {
@@ -29,6 +37,11 @@ export async function POST(req: NextRequest) {
   try {
     const user = verifyRequest(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    
+    // RBAC: Only admins can assign marks
+    if (user.role !== 'admin') {
+      return NextResponse.json({ success: false, message: "Forbidden: Admin access required" }, { status: 403 });
+    }
 
     const body: any = await req.json();
 
@@ -67,6 +80,10 @@ export async function PUT(req: NextRequest) {
   try {
     const user = verifyRequest(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    
+    if (user.role !== 'admin') {
+      return NextResponse.json({ success: false, message: "Forbidden: Admin access required" }, { status: 403 });
+    }
 
     const { id, student_id, course_id, marks }: any = await req.json();
 
@@ -94,6 +111,10 @@ export async function DELETE(req: NextRequest) {
   try {
     const user = verifyRequest(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    
+    if (user.role !== 'admin') {
+      return NextResponse.json({ success: false, message: "Forbidden: Admin access required" }, { status: 403 });
+    }
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

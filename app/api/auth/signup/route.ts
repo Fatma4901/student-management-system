@@ -88,27 +88,24 @@ export async function POST(req: Request) {
       throw new Error("Database connection failed");
     }
 
-    // STEP 4: Check existing user
-    console.log("🔍 Checking existing user:", email);
+    // STEP 4: Check if an Admin already exists (Restrict to 1 admin)
+    console.log("🔍 Checking existing admins...");
 
-    let existing;
+    let adminCount;
     try {
-      const result: any = await db.query(
-        "SELECT id FROM admin WHERE email = ?",
-        [email]
-      );
-      existing = result[0];
-      console.log("📊 Query result:", result);
+      const result: any = await db.query("SELECT COUNT(*) as count FROM admin");
+      adminCount = result[0][0].count;
+      console.log("📊 Total admins found:", adminCount);
     } catch (queryErr) {
       console.error("🔥 SELECT QUERY ERROR:", queryErr);
-      throw new Error("Failed to check existing user");
+      throw new Error("Failed to check existing admins");
     }
 
-    if (existing.length > 0) {
-      console.warn("❌ Email already exists:", email);
+    if (adminCount >= 1) {
+      console.warn("❌ Admin account already exists. Only one admin allowed.");
       return NextResponse.json(
-        { message: "Email already exists" },
-        { status: 400 }
+        { message: "Registration disabled. An Admin already exists." },
+        { status: 403 }
       );
     }
 

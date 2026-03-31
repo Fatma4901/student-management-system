@@ -3,19 +3,20 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, BookOpen, GraduationCap, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, GraduationCap, LogOut, Settings, ShieldCheck, UserCircle, ChevronRight } from 'lucide-react';
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Students', href: '/students', icon: Users },
-  { name: 'Courses', href: '/courses', icon: BookOpen },
-  { name: 'Marks', href: '/marks', icon: GraduationCap },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['admin', 'student'] },
+  { name: 'Students', href: '/students', icon: Users, roles: ['admin'] },
+  { name: 'Courses', href: '/courses', icon: BookOpen, roles: ['admin'] },
+  { name: 'My Results', href: '/marks', icon: GraduationCap, roles: ['admin', 'student'] },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string>('');
+  const [userRole, setUserRole] = useState<string>('admin'); // Default to admin for legacy
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -28,6 +29,7 @@ export default function Sidebar() {
         }).join(''));
         const decoded = JSON.parse(jsonPayload);
         setUserEmail(decoded.email);
+        setUserRole(decoded.role || 'admin');
       } catch (error) {
         console.error('Error decoding token:', error);
       }
@@ -51,54 +53,110 @@ export default function Sidebar() {
     router.push('/login');
   };
 
+  const filteredNavItems = navItems.filter(item => item.roles.includes(userRole));
+
   return (
-    <div className="w-64 bg-white shadow-xl h-screen flex flex-col fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out">
-      {/* Header */}
-      <div className="flex items-center justify-center h-16 bg-blue-600 text-white shadow-md">
-        <h1 className="text-xl font-bold tracking-wider flex items-center gap-2">
-          <BookOpen className="w-6 h-6" /> SMS Admin
-        </h1>
+    <div className="w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200/50 h-screen flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out font-sans shadow-[4px_0_24px_-12px_rgba(0,0,0,0.05)]">
+      {/* 🚀 Header / Brand */}
+      <div className="px-8 py-10 text-center">
+        <Link href="/" className="flex flex-col items-center gap-3 group">
+          <div className="p-3 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[1.2rem] shadow-xl shadow-blue-500/20 group-hover:rotate-6 transition-transform duration-500">
+             <GraduationCap className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-2xl font-black tracking-tighter text-slate-900 uppercase">
+            SMS <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Pro</span>
+          </span>
+        </Link>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto w-full">
-        {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
-                isActive
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{item.name}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      {/* 🧭 Navigation Section */}
+      <div className="flex-1 px-4 space-y-10 overflow-y-auto w-full no-scrollbar pb-10">
+        <div>
+          <p className="px-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 opacity-70">Main Portal</p>
+          <nav className="space-y-1.5 px-2">
+            {filteredNavItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all duration-300 group ${
+                    isActive
+                      ? 'bg-slate-900 text-white shadow-2xl shadow-slate-950/20'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-blue-400' : 'group-hover:text-blue-600'}`} />
+                    <span className="text-[14px]">{item.name}</span>
+                  </div>
+                  {isActive ? (
+                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                  ) : (
+                     <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-40 group-hover:translate-x-0 transition-all" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
-      {/* Footer / Logout */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50/50">
-        {userEmail && (
-          <div className="mb-3 px-3 py-2 bg-white rounded-lg border border-gray-200 shadow-sm">
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Signed in as</p>
-            <p className="text-sm font-semibold text-gray-800 truncate" title={userEmail}>
-              {userEmail}
-            </p>
+        {userRole === 'admin' && (
+          <div>
+             <p className="px-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 opacity-70">Management</p>
+             <div className="space-y-1.5 px-2">
+                <button className="flex items-center gap-3 w-full px-5 py-4 rounded-2xl text-[14px] font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all group">
+                   <Settings className="w-5 h-5 group-hover:text-amber-600" />
+                   <span>Settings</span>
+                </button>
+                <button className="flex items-center gap-3 w-full px-5 py-4 rounded-2xl text-[14px] font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all group">
+                   <ShieldCheck className="w-5 h-5 group-hover:text-green-600" />
+                   <span>Security</span>
+                </button>
+             </div>
           </div>
         )}
-        <button
-          onClick={handleLogout}
-          className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-red-600 font-semibold rounded-lg bg-red-50 hover:bg-red-100 transition-colors border border-red-100"
-        >
-          <LogOut className="w-5 h-5" />
-          <span>Logout</span>
-        </button>
+      </div>
+
+      {/* 👤 Footer / User Account */}
+      <div className="p-6 mt-auto">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 rounded-[2rem] p-6 shadow-2xl shadow-slate-950/30 relative overflow-hidden group">
+          {/* Subtle decoration */}
+          <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col gap-5">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 shadow-inner group-hover:border-blue-500/50 transition-colors">
+                  <UserCircle className="w-6 h-6 text-slate-400 group-hover:text-blue-400" />
+               </div>
+               <div className="overflow-hidden">
+                  <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-0.5">
+                    {userRole === 'admin' ? 'Authorized Admin' : 'Active Student'}
+                  </p>
+                  <p className="text-[13px] font-bold text-white truncate w-[130px]" title={userEmail}>
+                    {userEmail.split('@')[0]}
+                  </p>
+               </div>
+            </div>
+            
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white font-bold rounded-2xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-white/10 text-[10px] uppercase tracking-widest group/btn"
+            >
+              <LogOut className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+              <span>Secure Log Out</span>
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-6 flex justify-between items-center px-2">
+           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Build v2.4.1</span>
+           <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_4px_rgba(34,197,94,1)]"></div>
+              <span className="text-[9px] font-black text-slate-900 uppercase">Operational</span>
+           </div>
+        </div>
       </div>
     </div>
   );

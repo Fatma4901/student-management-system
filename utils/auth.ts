@@ -3,13 +3,19 @@ import { NextRequest } from "next/server";
 
 const SECRET = process.env.JWT_SECRET || "mysecret";
 
-export function generateToken(payload: any) {
+export interface AuthUser {
+  id: number;
+  email: string;
+  role: string;
+}
+
+export function generateToken(payload: AuthUser) {
   return jwt.sign(payload, SECRET, { expiresIn: "1d" });
 }
 
-export function verifyToken(token: string) {
+export function verifyToken(token: string): AuthUser | null {
   try {
-    return jwt.verify(token, SECRET);
+    return jwt.verify(token, SECRET) as AuthUser;
   } catch {
     return null;
   }

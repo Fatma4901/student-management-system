@@ -2,6 +2,18 @@ import db from "@/lib/db";
 import { NextResponse, NextRequest } from "next/server";
 import { Student } from "@/types";
 import { verifyRequest } from "@/utils/auth";
+import bcrypt from "bcryptjs";
+import { sendWelcomeEmail } from "@/utils/email";
+
+// Helper to generate a temporary verification password
+function generateTempPassword(length = 8) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid ambiguous chars 1, l, 0, O
+  let pass = '';
+  for (let i = 0; i < length; i++) {
+    pass += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pass;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,12 +25,22 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const [rows]: any = await db.query(`
+    const isStudent = user.role === 'student';
+    let query = `
       SELECT s.*, c.name as course_name
       FROM students s
       LEFT JOIN courses c ON s.course_id = c.id
-      ORDER BY s.created_at DESC
-    `);
+    `;
+    
+    let queryParams: any[] = [];
+    if (isStudent) {
+      query += ` WHERE s.id = ? `;
+      queryParams.push(user.id);
+    }
+    
+    query += ` ORDER BY s.created_at DESC `;
+
+    const [rows]: any = await db.query(query, queryParams);
 
     return NextResponse.json({ success: true, data: rows });
   } catch (error) {
@@ -40,6 +62,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: "Forbidden: Admin access required" },
+        { status: 403 }
+      );
+    }
+
     const { name, email, phone, course_id }: Omit<Student, 'id' | 'created_at'> = await req.json();
 
     if (!name || !email) {
@@ -49,26 +78,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 🚀 STEP 1: Generate & Hash temporary password
+    const tempPassword = generateTempPassword();
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    // 🚀 STEP 2: Insert into database (including password and role)
     const [result]: any = await db.query(
-      "INSERT INTO students (name, email, phone, course_id) VALUES (?, ?, ?, ?)",
-      [name, email, phone || null, course_id || null]
+      "INSERT INTO students (name, email, password, phone, course_id, role) VALUES (?, ?, ?, ?, ?, 'student')",
+      [name, email, hashedPassword, phone || null, course_id || null]
     );
+
+    // 🚀 STEP 3: Send the "Welcome" email in the background (non-blocking)
+    try {
+      await sendWelcomeEmail({
+        toEmail: email,
+        studentName: name,
+        temporaryPassword: tempPassword
+      });
+      console.log(`✅ Welcome Email sent for student identity: ${email}`);
+    } catch (emailErr) {
+      console.error("⚠️ Failed to send welcome email:", emailErr);
+      // We don't fail the whole registration if email delivery fails,
+      // but we log it for administrative monitoring.
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Student created successfully",
+      message: "Student identity initialized and portal credentials dispatched.",
       data: { id: result.insertId, name, email, phone, course_id }
     });
   } catch (error: any) {
     console.error("Create student error:", error);
     if (error.code === 'ER_DUP_ENTRY') {
       return NextResponse.json(
-        { success: false, message: "Email already exists" },
+        { success: false, message: "Email already exists in institutional database" },
         { status: 400 }
       );
     }
     return NextResponse.json(
-      { success: false, message: "Failed to create student" },
+      { success: false, message: "Failed to initialize student identity" },
       { status: 500 }
     );
   }
@@ -81,6 +129,13 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    if (user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: "Forbidden: Admin access required" },
+        { status: 403 }
       );
     }
 
@@ -124,6 +179,13 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    if (user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: "Forbidden: Admin access required" },
+        { status: 403 }
       );
     }
 

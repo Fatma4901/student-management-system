@@ -9,11 +9,30 @@ export async function POST(req: Request) {
     console.log("➡️ [LOGIN] Request for:", email);
 
     console.log("🔍 [LOGIN] Connecting to DB...");
-    const [rows]: any = await db.query(
+    // STEP 1: Check admin table
+    let [rows]: any = await db.query(
       "SELECT * FROM admin WHERE email=?",
       [email]
     );
-    console.log("✅ [LOGIN] Query complete, rows found:", rows.length);
+
+    let role = 'admin';
+    let userRow = rows[0];
+
+    // STEP 2: If no admin found, check students table
+    if (rows.length === 0) {
+      console.log("🔍 [LOGIN] Checking student table...");
+      [rows] = await db.query(
+        "SELECT * FROM students WHERE email=?",
+        [email]
+      );
+      
+      if (rows.length > 0) {
+        role = 'student';
+        userRow = rows[0];
+      }
+    }
+
+    console.log("✅ [LOGIN] Query complete, user found in role:", role);
 
     if (rows.length === 0) {
       console.warn("⚠️ [LOGIN] User not found:", email);
@@ -23,8 +42,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // STEP 3: Validate password (students must also have a password now)
     console.log("🔐 [LOGIN] Comparing passwords...");
-    const isValidPassword = await bcrypt.compare(password, rows[0].password);
+    const isValidPassword = await bcrypt.compare(password, userRow.password);
     console.log("✅ [LOGIN] Password valid:", isValidPassword);
 
     if (!isValidPassword) {
@@ -36,8 +56,9 @@ export async function POST(req: Request) {
     }
 
     const token = generateToken({
-      id: rows[0].id,
-      email: rows[0].email,
+      id: userRow.id,
+      email: userRow.email,
+      role: userRow.role || role,
     });
 
     const response = NextResponse.json({
