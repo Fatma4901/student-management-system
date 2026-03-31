@@ -82,10 +82,10 @@ export async function POST(req: NextRequest) {
     const tempPassword = generateTempPassword();
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    // 🚀 STEP 2: Insert into database (including password and role)
+    // 🚀 STEP 2: Insert into database (Perfectly aligned 6-parameter protocol)
     const [result]: any = await db.query(
-      "INSERT INTO students (name, email, password, phone, course_id, role) VALUES (?, ?, ?, ?, ?, 'student')",
-      [name, email, hashedPassword, phone || null, course_id || null]
+      "INSERT INTO students (name, email, password, phone, course_id, role) VALUES (?, ?, ?, ?, ?, ?)",
+      [name, email, hashedPassword, phone || null, course_id || null, 'student']
     );
 
     // 🚀 STEP 3: Send the "Welcome" email in the background (non-blocking)
