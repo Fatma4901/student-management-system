@@ -116,7 +116,11 @@ export async function POST(req: NextRequest) {
       );
     }
     return NextResponse.json(
-      { success: false, message: "Failed to initialize student identity" },
+      { 
+        success: false, 
+        message: "Institutional Core Error: " + (error.sqlMessage || "Failed to initialize student identity"),
+        debug: error.message 
+      },
       { status: 500 }
     );
   }

@@ -29,9 +29,16 @@ export async function POST(req: Request) {
     // 2. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Insert student securely (Standard protocol)
-    const query = "INSERT INTO students (name, email, password, role) VALUES (?, ?, ?, ?)";
-    await db.query(query, [name, email, hashedPassword, 'student']);
+    // 3. Final Secure Insertion (Matched with Railway structure)
+    try {
+      await db.query(
+        "INSERT INTO students (name, email, password, role, phone, course_id) VALUES (?, ?, ?, ?, NULL, NULL)",
+        [name, email, hashedPassword, 'student']
+      );
+    } catch (sqlError: any) {
+      console.error("⛔ DATABASE INSERTION CRASH:", sqlError.message);
+      throw new Error("DB_CALIBRATION_FAIL: " + sqlError.message);
+    }
 
     return NextResponse.json({
       success: true,
