@@ -82,11 +82,22 @@ export async function POST(req: NextRequest) {
     const tempPassword = generateTempPassword();
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    // 🚀 STEP 2: Insert into database (Perfectly aligned 6-parameter protocol)
-    const [result]: any = await db.query(
-      "INSERT INTO students (name, email, password, phone, course_id, role) VALUES (?, ?, ?, ?, ?, ?)",
-      [name, email, hashedPassword, phone || null, course_id || null, 'student']
-    );
+    // 🚀 STEP 2: Database Synchronization
+    // Handle empty course_id to prevent INT conversion errors (Important for strict DBs)
+    const sanitizedCourseId = course_id && course_id.toString().trim() !== '' ? Number(course_id) : null;
+    
+    let result: any;
+    try {
+      [result] = await db.query(
+        "INSERT INTO students (name, email, password, phone, course_id, role) VALUES (?, ?, ?, ?, ?, ?)",
+        [name, email, hashedPassword, phone || null, sanitizedCourseId, 'student']
+      );
+    } catch (sqlError: any) {
+      console.error("⛔ [DB SYNC FAILED]:", sqlError.message);
+      throw new Error(`DB_SYNC_ERROR: ${sqlError.message}`);
+    }
+
+    // ... (rest of the logic)
 
     // 🚀 STEP 3: Send the "Welcome" email in the background (non-blocking)
     try {
