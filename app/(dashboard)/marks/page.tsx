@@ -13,7 +13,7 @@ import {
   Trophy, TrendingUp, Search, Plus, Edit, Trash2, 
   BarChart3, User, BookOpen, GraduationCap, 
   AlertCircle, ChevronRight, CheckCircle2, ShieldCheck, 
-  Target, Download
+  Target, Download, Settings
 } from 'lucide-react';
 
 export default function MarksPage() {
