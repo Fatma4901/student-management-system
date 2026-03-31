@@ -29,11 +29,9 @@ export async function POST(req: Request) {
     // 2. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Insert student securely (Standard 6-parameter protocol)
-    await db.query(
-      "INSERT INTO students (name, email, password, role, phone, course_id) VALUES (?, ?, ?, ?, ?, ?)",
-      [name, email, hashedPassword, 'student', null, null]
-    );
+    // 3. Insert student securely (Standard protocol)
+    const query = "INSERT INTO students (name, email, password, role) VALUES (?, ?, ?, ?)";
+    await db.query(query, [name, email, hashedPassword, 'student']);
 
     return NextResponse.json({
       success: true,
@@ -43,7 +41,11 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Student Signup ERROR:", error);
     return NextResponse.json(
-      { message: "Server error during registration", error: error.message },
+      { 
+        message: "Institutional Core Error: " + (error.sqlMessage || error.message), 
+        error: error.message,
+        sqlMessage: error.sqlMessage 
+      },
       { status: 500 }
     );
   }
