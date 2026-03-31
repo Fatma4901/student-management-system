@@ -83,8 +83,14 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     // 🚀 STEP 2: Database Synchronization
-    // Handle empty course_id to prevent INT conversion errors (Important for strict DBs)
-    const sanitizedCourseId = course_id && course_id.toString().trim() !== '' ? Number(course_id) : null;
+    // We sanitize the course_id to ensure only valid Integers go to the DB
+    let sanitizedCourseId = null;
+    if (course_id && typeof course_id !== 'object') {
+      const parsed = parseInt(course_id.toString(), 10);
+      if (!isNaN(parsed)) {
+        sanitizedCourseId = parsed;
+      }
+    }
     
     let result: any;
     try {
