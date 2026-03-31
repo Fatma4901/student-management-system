@@ -100,7 +100,10 @@ export async function POST(req: NextRequest) {
       );
     } catch (sqlError: any) {
       console.error("⛔ [DB SYNC FAILED]:", sqlError.message);
-      throw new Error(`DB_SYNC_ERROR: ${sqlError.message}`);
+      return NextResponse.json(
+        { success: false, message: `Database Missing Column or Error: ${sqlError.message}` },
+        { status: 500 }
+      );
     }
 
     // ... (rest of the logic)
