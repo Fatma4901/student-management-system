@@ -29,16 +29,16 @@ export async function POST(req: Request) {
     // 2. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Insert student with 'student' role
-    // Note: Ensuring availability of 'role' and 'password' columns in database.
+    // 3. Insert student securely
+    // We explicitly provide NULL for phone and course_id to avoid "Field doesn't have a default value" errors
     await db.query(
-      "INSERT INTO students (name, email, password, role) VALUES (?, ?, ?, 'student')",
+      "INSERT INTO students (name, email, password, role, phone, course_id) VALUES (?, ?, ?, 'student', NULL, NULL)",
       [name, email, hashedPassword]
     );
 
     return NextResponse.json({
       success: true,
-      message: "Student registration successful",
+      message: "Academic identity initialized successfully",
     });
 
   } catch (error: any) {
