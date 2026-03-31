@@ -29,11 +29,10 @@ export async function POST(req: Request) {
     // 2. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Insert student securely
-    // We explicitly provide NULL for phone and course_id to avoid "Field doesn't have a default value" errors
+    // 3. Insert student securely (Standard 6-parameter protocol)
     await db.query(
-      "INSERT INTO students (name, email, password, role, phone, course_id) VALUES (?, ?, ?, 'student', NULL, NULL)",
-      [name, email, hashedPassword]
+      "INSERT INTO students (name, email, password, role, phone, course_id) VALUES (?, ?, ?, ?, ?, ?)",
+      [name, email, hashedPassword, 'student', null, null]
     );
 
     return NextResponse.json({
