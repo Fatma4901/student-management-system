@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     const token = generateToken({
       id: userRow.id,
       email: userRow.email,
-      role: userRow.role || role,
+      role: role, // Use the detected role (admin/student) to ensure maximum permission stability
     });
 
     const response = NextResponse.json({
